@@ -3,8 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build"
+    "dev": "node generate-sw.mjs && vite",
+    "build": "node generate-sw.mjs && vite build"
   },
   "dependencies": {
     "axios": "^1.18.1",
