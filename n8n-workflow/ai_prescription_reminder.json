@@ -1,0 +1,212 @@
+{
+  "name": "ai_prescription_reminder",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "prescription-upload",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -272
+      ],
+      "id": "07421457-20dd-443c-ab86-1f829f2f8c35",
+      "name": "Webhook",
+      "webhookId": "7ceb4acb-ed04-42d4-8638-4ec6e4be22c8"
+    },
+    {
+      "parameters": {
+        "bucketName": "ai-prescription-reminder",
+        "fileKey": "={{ $json.body.key }}"
+      },
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -144
+      ],
+      "id": "741388b7-7b0b-4609-85e6-372259c1a28c",
+      "name": "Download a file",
+      "credentials": {
+        "aws": {
+          "id": "3vWFkcyjXLU1CZHQ",
+          "name": "AWS (IAM) account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Analyze this prescription image.\nExtract:\n- Medicine name\n- Dosage\n- Frequency\n- Duration\n- Notes\n\nReturn only valid JSON.\nReturn ONLY valid JSON.\n\nDo not use markdown.\nDo not use ```json.\nDo not explain anything.\nReturn a JSON object only.",
+        "options": {
+          "systemMessage": "You are a medical prescription extraction assistant.\nReturn only valid JSON.\nDo not include markdown.\nReturn ONLY valid JSON.\n\nDo not use markdown.\nDo not use ```json.\nDo not explain anything.\nReturn a JSON object only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        -144
+      ],
+      "id": "e8a784a5-36da-4867-9861-95bd1478cd49",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        80
+      ],
+      "id": "45a7ee22-9bab-4ed1-87bd-053b39c5e2a8",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "VoUbBu6UojrSn0GD",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const parsed = JSON.parse($input.first().json.output);\n\nconst imageKey = $input.first().json.body.key;\n\nconst fileName = imageKey.split(\"/\").pop();\n\nconst uploadId = fileName.replace(/\\.[^.]+$/, \"\");\n\nreturn [\n  {\n    json: {\n      ...parsed,\n      uploadId,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -272
+      ],
+      "id": "cd857a88-cf0f-4c16-bec2-e8f226dc0c41",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://5bn14gh117.execute-api.ap-south-1.amazonaws.com/prescription",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  key: \"results/\" + $json.uploadId + \".json\",\n  data: $json\n} }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1248,
+        -272
+      ],
+      "id": "fa1150a6-bb87-4360-8e76-8e7cb5bdb3ba",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        800,
+        -272
+      ],
+      "id": "4d2f5b6f-6377-4cbf-bbac-22e2db4ecdb0",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Download a file",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download a file": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "3d05cea3-7a1e-4eeb-ae85-63f65c18407b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6f0d671509898ab48c519f5501db164057fd7d7eb52584d95fa1f6cc7581c966"
+  },
+  "nodeGroups": [],
+  "id": "1iwWYZPXBX3vorrv",
+  "tags": []
+}
