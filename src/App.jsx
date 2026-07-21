@@ -51,7 +51,7 @@ export default function App() {
       {/* Header */}
       <header className="app-header">
         <div className="logo">
-          <div className="logo-mark"><FiShield size={16} /></div>
+          <div className="logo-mark"><FiShield size={15} /></div>
           <div>
             <div className="logo-name">AI MediCare</div>
             <div className="logo-sub">Your Health, Our Priority</div>

@@ -1,13 +1,14 @@
+
 importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js");
 
 firebase.initializeApp({
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyCpW8KWAUtc9MZU6WBxQ9cZ1Cz2GY_QhQk",
+  authDomain: "ai-prescription-fb.firebaseapp.com",
+  projectId: "ai-prescription-fb",
+  storageBucket: "ai-prescription-fb.firebasestorage.app",
+  messagingSenderId: "366209578666",
+  appId: "1:366209578666:web:33b2e4feb13b7d69c582d3"
 });
 
 const messaging = firebase.messaging();

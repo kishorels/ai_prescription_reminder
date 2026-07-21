@@ -3,6 +3,8 @@ import { FiCheckCircle, FiAlertTriangle, FiX } from 'react-icons/fi';
 
 /**
  * Toast notification component.
+ * On mobile: slides up from bottom, full width.
+ * On desktop: slides in from the right.
  * @param {{ visible: boolean, type: 'success'|'error', message: string, onClose: Function }} props
  */
 export default function Toast({ visible, type = 'success', message, onClose }) {
@@ -13,10 +15,10 @@ export default function Toast({ visible, type = 'success', message, onClose }) {
       {visible && (
         <motion.div
           className={`toast toast-${type}`}
-          initial={{ opacity: 0, y: -40, scale: 0.95 }}
+          initial={{ opacity: 0, y: 40, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -30, scale: 0.95 }}
-          transition={{ duration: 0.35, ease: 'easeOut' }}
+          exit={{ opacity: 0, y: 30, scale: 0.95 }}
+          transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
           id="toast-notification"
         >
           <div className="toast-icon">
